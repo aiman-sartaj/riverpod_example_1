@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:example_one/extensions/immuteable_list_methods.dart';
 import 'package:example_one/models/message/message.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,15 +8,16 @@ class MessagesProvider extends StateNotifier<List<Message>> {
   MessagesProvider() : super([]);
 
   void _addMessage(Message message) {
-    state = [...state, message];
+    state = state.withNew(message);
   }
 
   void _removeMessage(Message message) {
-    state = state.where((m) => m.messageId != message.messageId).toList();
+    // state = state.where((m) => m.messageId != message.messageId).toList();
+    state = state.withRemoved(message, test: (m) => m.messageId == message.messageId);
   }
 
   void _updateMessage(Message message) {
-    state = state.map((m) => m.messageId == message.messageId ? message : m).toList();
+    state = state.updateWith(message, test: (m) => m.messageId == message.messageId);
   }
 
   void sendMessage(String text) {
