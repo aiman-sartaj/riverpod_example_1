@@ -1,7 +1,6 @@
-import 'package:chat_app/providers/user/user.dart';
+import 'package:chat_app/providers/user/user_provider.dart';
 import 'package:chat_app/routes/app_routes.dart';
 import 'package:chat_app/services/firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,15 +10,21 @@ import '../../core/custom_textfield.dart';
 import '../../utils/colors.dart';
 import '../../utils/loading.dart';
 
-class SignUp extends ConsumerWidget {
-  SignUp({super.key});
+class SignUp extends ConsumerStatefulWidget {
+  const SignUp({super.key});
 
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() {
+    return _SignUpState();
+  }
+}
+
+class _SignUpState extends ConsumerState<SignUp> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  Future<void> _createNewUser(BuildContext context, WidgetRef ref) async {
-    loading(context);
+  Future<void> _createNewUser(WidgetRef ref) async {
     final userNotifier = ref.read(userProvider.notifier);
     await userNotifier.createUser(
       email: emailController.text,
@@ -28,13 +33,10 @@ class SignUp extends ConsumerWidget {
 
     await FirebaseServices()
         .saveToCollection(emailController.text, nameController.text);
-
-    // ignore: use_build_context_synchronously
-    notLoading(context);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SizedBox(
@@ -80,7 +82,11 @@ class SignUp extends ConsumerWidget {
                     ),
                   ),
                   child: MaterialButton(
-                    onPressed: () => _createNewUser(context, ref),
+                    onPressed: () async {
+                      await _createNewUser(ref);
+
+                      notLoading(context);
+                    },
                     child: MyText(
                       text: "Sign Up",
                       fontClr: Colors.white,

@@ -1,4 +1,4 @@
-import 'package:chat_app/providers/user/user.dart';
+import 'package:chat_app/providers/user/user_provider.dart';
 import 'package:chat_app/views/home/home.dart';
 import 'package:chat_app/views/sign_up/sign_up.dart';
 import 'package:flutter/material.dart';

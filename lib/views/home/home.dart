@@ -1,4 +1,4 @@
-import 'package:chat_app/providers/user/user.dart';
+import 'package:chat_app/providers/user/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -35,7 +35,7 @@ class HomeView extends ConsumerWidget {
                 ),
                 child: MaterialButton(
                   onPressed: () {
-                    Navigator.of(context).popAndPushNamed(AppRoutes.chat);
+                    Navigator.of(context).pushNamed(AppRoutes.chat);
                   },
                   child: MyText(
                     text: "Get Started",

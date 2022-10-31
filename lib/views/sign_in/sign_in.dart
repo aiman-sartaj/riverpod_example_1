@@ -1,5 +1,5 @@
 import 'package:chat_app/core/custom_textfield.dart';
-import 'package:chat_app/providers/user/user.dart';
+import 'package:chat_app/providers/user/user_provider.dart';
 import 'package:chat_app/routes/app_routes.dart';
 import 'package:chat_app/services/auth.dart';
 import 'package:chat_app/utils/colors.dart';
@@ -18,16 +18,14 @@ class SignIn extends ConsumerWidget {
   Auth firebaseAuth = Auth();
 
   Future<void> _signIn(BuildContext context, WidgetRef ref) async {
-    loading(context);
+    loading(ref.context);
     final userNotifier = ref.read(userProvider.notifier);
 
     final user = await userNotifier.login(
       email: emailController.text,
       password: passwordController.text,
     );
-    // ignore: use_build_context_synchronously
-    notLoading(context);
-    Navigator.of(context).pop();
+    notLoading(ref.context);
   }
 
   @override
