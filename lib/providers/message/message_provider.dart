@@ -32,46 +32,7 @@ class MessagesProvider extends StateNotifier<List<Message>> {
       _sendMessage(newMessage);
     }
   }
-
-  // getMessages () {
-  //   _firebaseServices.
-  // }
 }
 
 final messagesProvider = StateNotifierProvider<MessagesProvider, List<Message>>(
     (ref) => MessagesProvider());
-
-final futureProvider = FutureProvider<MessagesProvider>((ref) async {
-  return MessagesProvider();
-});
-
-final allChatsProvider = StreamProvider.autoDispose<Iterable<Message>>(
-  (ref) {
-    final controller = StreamController<Iterable<Message>>();
-    final FirebaseServices firebaseServices = FirebaseServices();
-
-    final sub = FirebaseFirestore.instance
-        .collection("conversations")
-        .snapshots()
-        .listen(
-      (snapshots) {
-        final messages = snapshots.docs.map(
-          (doc) => Message(
-              messageId: doc.id,
-              senderId: firebaseServices.myUserId,
-              receiverId: "",
-              text: doc.id,
-              createdAt: DateTime.now()),
-        );
-        controller.sink.add(messages);
-      },
-    );
-
-    ref.onDispose(() {
-      sub.cancel();
-      controller.close();
-    });
-
-    return controller.stream;
-  },
-);
