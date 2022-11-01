@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:chat_app/services/firestore.dart';
+import 'package:chat_app/utils/date.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../models/message.dart';
 
@@ -13,20 +15,27 @@ class MessagesProvider extends StateNotifier<List<Message>> {
 
   void _sendMessage(Message message) {
     state = [...state, message];
-    _firebaseServices.sendMessage(message.receiverId, message.text);
+    _firebaseServices.sendMessage(message);
   }
 
   void sendMessage(String text, String receiverId) {
     if (text.isNotEmpty) {
-      _sendMessage(
-        Message(
-            messageId: DateTime.now().millisecondsSinceEpoch.toString(),
-            text: text,
-            senderId: _firebaseServices.username,
-            receiverId: receiverId),
+      var uuid = const Uuid();
+
+      final newMessage = Message(
+        messageId: _firebaseServices.myUserId + uuid.v4(),
+        senderId: _firebaseServices.myUserId,
+        receiverId: receiverId,
+        text: text,
+        createdAt: DateTime.now(),
       );
+      _sendMessage(newMessage);
     }
   }
+
+  // getMessages () {
+  //   _firebaseServices.
+  // }
 }
 
 final messagesProvider = StateNotifierProvider<MessagesProvider, List<Message>>(
@@ -39,7 +48,7 @@ final futureProvider = FutureProvider<MessagesProvider>((ref) async {
 final allChatsProvider = StreamProvider.autoDispose<Iterable<Message>>(
   (ref) {
     final controller = StreamController<Iterable<Message>>();
-    final FirebaseServices _firebaseServices = FirebaseServices();
+    final FirebaseServices firebaseServices = FirebaseServices();
 
     final sub = FirebaseFirestore.instance
         .collection("conversations")
@@ -49,9 +58,10 @@ final allChatsProvider = StreamProvider.autoDispose<Iterable<Message>>(
         final messages = snapshots.docs.map(
           (doc) => Message(
               messageId: doc.id,
-              senderId: _firebaseServices.username,
+              senderId: firebaseServices.myUserId,
               receiverId: "",
-              text: doc.id),
+              text: doc.id,
+              createdAt: DateTime.now()),
         );
         controller.sink.add(messages);
       },

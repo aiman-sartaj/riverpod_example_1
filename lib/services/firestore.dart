@@ -1,6 +1,12 @@
+import 'dart:async';
+
+import 'package:chat_app/models/chat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
+
+import '../models/message.dart';
+import '../utils/date.dart';
 
 class FirebaseServices {
   CollectionReference users = FirebaseFirestore.instance.collection('users');
@@ -8,7 +14,7 @@ class FirebaseServices {
   CollectionReference conversations =
       FirebaseFirestore.instance.collection('conversations');
 
-  String get username {
+  String get myUserId {
     return _auth.currentUser!.uid;
   }
 
@@ -40,19 +46,26 @@ class FirebaseServices {
         .catchError((error) => print("Failed to create chat: $error"));
   }
 
-  Future<void> sendMessage(String receiverId, String message) async {
-    var uuid = const Uuid();
-    return conversations
-        .add({
-          "id": _auth.currentUser!.uid + uuid.v4(),
-          "chat_id": "${_auth.currentUser!.uid}:$receiverId",
-          "message": message,
-          "sender_id": username,
-          "receiver_id": receiverId,
-          "time_stamp": Timestamp.fromDate(currentDate)
-        })
+  Future<void> sendMessage(Message newMessage) async {
+    await conversations
+        .add(newMessage.toJson())
         .then((value) => print("Message send"))
         .catchError((error) => print("Failed to send message: $error"));
+
+    // await chats
+    //     .doc("${_auth.currentUser!.uid}:$receiverId")
+    //     .update({ChatField.lastMessageTime: DateTime.now()});
+    // return conversations
+    //     .add({
+    //       "id": _auth.currentUser!.uid + uuid.v4(),
+    //       "chat_id": "${_auth.currentUser!.uid}:$receiverId",
+    //       "message": message,
+    //       "sender_id": myUsername,
+    //       "receiver_id": receiverId,
+    //       "time_stamp": Timestamp.fromDate(currentDate)
+    //     })
+    //     .then((value) => print("Message send"))
+    //     .catchError((error) => print("Failed to send message: $error"));
   }
 
   Future<void> updateChat(String message) async {
@@ -89,6 +102,11 @@ class FirebaseServices {
 
     return newString;
   }
+
+  static Stream<QuerySnapshot> getMessages() => FirebaseFirestore.instance
+      .collection('conversations')
+      .orderBy("createdAt", descending: true)
+      .snapshots();
 
   Stream<QuerySnapshot<Object?>> get allChats => FirebaseFirestore.instance
       .collection('chats')
